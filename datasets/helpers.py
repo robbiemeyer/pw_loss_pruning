@@ -15,8 +15,7 @@ from .utils import DatasetWithAttribute, ClasswiseTransformDataset, RandomSquare
 
 def get_celebA_data(validation=True, alpha=None, beta=None, attach_attribute=True):
     if alpha is not None or beta is not None:
-        assert alpha is None and beta is not None
-        assert beta is None and alpha is not None
+        assert alpha is not None and beta is not None
 
     transform = transforms.Compose([
         transforms.ToTensor(),
