@@ -42,10 +42,10 @@ function test_props () {
 mkdir -p $dir
 mkdir -p $output_dir
 
-#test_props "$dir/weight_only_no_retrain.csv" "sw_autobot" 0 0
-#test_props "$dir/corr_only_no_retrain.csv" "autobot" 0 1
-#test_props "$dir/weight_only_retrain.csv" "sw_autobot" 1 0
-#test_props "$dir/corr_only_retrain.csv" "autobot" 1 1
+test_props "$dir/weight_only_no_retrain.csv" "sw_autobot" 0 0
+test_props "$dir/corr_only_no_retrain.csv" "autobot" 0 1
+test_props "$dir/weight_only_retrain.csv" "sw_autobot" 1 0
+test_props "$dir/corr_only_retrain.csv" "autobot" 1 1
 
-test_props "$dir/taylor_weight_only_retrain.csv" "sw_taylor" 1 0
-test_props "$dir/taylor_corr_only_retrain.csv" "taylor" 1 1
+#test_props "$dir/taylor_weight_only_retrain.csv" "sw_taylor" 1 0
+#test_props "$dir/taylor_corr_only_retrain.csv" "taylor" 1 1

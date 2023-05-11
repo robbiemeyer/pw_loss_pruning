@@ -11,7 +11,7 @@ name="${method}.csv"
 dir="output/results/$model/$run_name"
 output_dir="output/pruned_models/$model/$run_name"
 
-props="0 0.9375 0.9688 0.9844 0.9922 0.9961"
+props="0.9375 0.9688 0.9844 0.9922 0.9961"
 
 batch_size=64
 

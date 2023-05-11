@@ -97,6 +97,12 @@ def get_cifar10_data(validation=True, imagenet_size=False, mode=None):
             transforms.RandomHorizontalFlip(),
             norm
         ])
+        test_with_square_transforms = transforms.Compose([
+            transforms.ToTensor(),
+            square_transform,
+            norm
+        ])
+
         train_data = torchvision.datasets.CIFAR10(root=DATA_ROOT, train=True)
         affected_classes = {train_data.class_to_idx['dog']}
 
@@ -133,6 +139,9 @@ def get_cifar10_data(validation=True, imagenet_size=False, mode=None):
         test_data = {
             'none': torchvision.datasets.CIFAR10(root=DATA_ROOT, train=False, transform=transform)
         }
+        if mode == 'shortcut':
+            test_data['with_square'] = torchvision.datasets.CIFAR10(root=DATA_ROOT, train=False,
+                                            transform=test_with_square_transforms)
 
     return train_data, test_data
 

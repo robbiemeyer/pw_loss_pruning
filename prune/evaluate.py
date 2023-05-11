@@ -12,10 +12,11 @@ def evaluate(outputs, labels, model):
     metrics['auroc'] = roc_auc_score(labels, model.reduce_fn(outputs), multi_class='ovr')
     metrics['accuracy'] = (model.pred_fn(outputs) == labels).float().mean().item()
 
-    classwise_auroc = roc_auc_score(labels, model.reduce_fn(outputs), multi_class='ovr',
-                                    average=None)
-    for i, v in enumerate(classwise_auroc):
-        metrics['{}_auroc'.format(i)] = v
+    if model.nclasses > 1:
+        classwise_auroc = roc_auc_score(labels, model.reduce_fn(outputs), multi_class='ovr',
+                                        average=None)
+        for i, v in enumerate(classwise_auroc):
+            metrics['{}_auroc'.format(i)] = v
 
     #for target in labels.unique():
     #    included = labels == target
