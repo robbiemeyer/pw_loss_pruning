@@ -26,6 +26,7 @@ function test_props () {
   method=$2
   use_soft_retrain=$3
   fix_labels=$4
+  use_weights_retrain=$5
   for prop in $props
   do
       echo Running $prop "(${output_name})"
@@ -34,7 +35,8 @@ function test_props () {
         --method $method --sw_gamma $sw_gamma --sw_min_weight $sw_min_weight \
         --ab_beta $ab_beta --ab_iters $ab_iters --ab_gamma $ab_gamma --ab_lr $ab_lr \
         --gpu_id $gpu_id --batch_size $batch_size --pruned_model_output $output \
-        --use_soft_retrain $use_soft_retrain --fix_labels $fix_labels
+        --use_soft_retrain $use_soft_retrain --fix_labels $fix_labels \
+        --use_weights_retrain $use_weights_retrain
       echo -e "\n"
   done
 }
@@ -42,10 +44,13 @@ function test_props () {
 mkdir -p $dir
 mkdir -p $output_dir
 
-test_props "$dir/weight_only_no_retrain.csv" "sw_autobot" 0 0
-test_props "$dir/corr_only_no_retrain.csv" "autobot" 0 1
-test_props "$dir/weight_only_retrain.csv" "sw_autobot" 1 0
-test_props "$dir/corr_only_retrain.csv" "autobot" 1 1
+#test_props "$dir/weight_only_no_retrain.csv" "sw_autobot" 0 0 0
+#test_props "$dir/corr_only_no_retrain.csv" "autobot" 0 1 0
+#test_props "$dir/weight_only_retrain.csv" "sw_autobot" 1 0 1
+#test_props "$dir/corr_only_retrain.csv" "autobot" 1 1 0
+
+test_props "$dir/weight_only_retrain_only.csv" "autobot" 0 0 1
+test_props "$dir/corr_only_retrain_only.csv" "autobot" 1 0 0
 
 #test_props "$dir/taylor_weight_only_retrain.csv" "sw_taylor" 1 0
 #test_props "$dir/taylor_corr_only_retrain.csv" "taylor" 1 1

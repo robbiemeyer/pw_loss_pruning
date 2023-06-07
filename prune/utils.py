@@ -14,6 +14,18 @@ from torchvision.models.efficientnet import MBConv
 
 from params import CACHE_DIR
 
+def sw_weights(min_weight, gamma):
+    def get_weights(labels, predictions):
+        if predictions.shape[1] == 1:
+            predictions, labels = predictions.view(-1), labels.view(-1)
+            scores = predictions * labels + (1 - predictions) * (1 - labels)
+        else:
+            scores = torch.gather(predictions, 1, labels.view(-1, 1)).view(-1)
+
+        return min_weight + (1-min_weight) * (1-scores)**gamma
+
+    return get_weights
+
 @torch.no_grad()
 def get_all_predictions(dataset, model, batch_size=256, num_workers=6, cache=True, raw=False):
     if cache:

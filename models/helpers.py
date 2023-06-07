@@ -1,4 +1,5 @@
 import torch
+from .models import BaseModel
 
 def load_saved_model(path, device):
     backbone, fc = torch.load(path, map_location=device)

@@ -10,7 +10,7 @@ import torchvision
 import models
 from prune.pruner import RandomPrune, AutoBot, ScoreWeightedAutoBot, \
         TaylorPrune, ScoreWeightedTaylorPrune
-from prune.utils import SoftDataset
+from prune.utils import SoftDataset, sw_weights
 from prune.retrainer import GenericRetrainer
 from prune.strategy import one_shot_prune
 from prune.evaluate import evaluate_model
@@ -63,6 +63,8 @@ def parse_args():
         choices=[-1, 0, 1]) # -1 = unset, 0 = false, 1 = true
     parser.add_argument('--log_name', default=None)
     parser.add_argument('--use_soft_retrain', type=int, default=-1,
+        choices=[-1, 0, 1]) # -1 = unset, 0 = false, 1 = true
+    parser.add_argument('--use_weights_retrain', type=int, default=-1,
         choices=[-1, 0, 1]) # -1 = unset, 0 = false, 1 = true
 
     return parser.parse_args()
@@ -196,18 +198,37 @@ if __name__ == "__main__" :
                 data_is_deterministic=data_is_deterministic,
                 save_checkpoint=save_ckpt, load_checkpoint=load_ckpt, log_dir=log_dir)
 
+    use_soft_retrain = args.use_soft_retrain == 1 \
+            or args.use_soft_retrain == -1 and args.method in ('sw_taylor', 'sw_autobot')
+    use_weights_retrain = args.use_weights_retrain == 1 \
+            or args.use_weights_retrain == -1 and args.method in ('sw_taylor', 'sw_autobot')
+
     # Get data for retraining
-    if args.method in ('sw_taylor', 'sw_autobot') and args.use_soft_retrain == 1 and args.fix_labels == 0:
-        def train_loader():
-            pruner.soft_train_data.labels = None
-            return torch.utils.data.DataLoader(pruner.soft_train_data, batch_size=batch_size,
-                                               shuffle=True, num_workers=num_workers)
-    elif args.method in ('sw_taylor', 'sw_autobot') and args.use_soft_retrain != 0 or args.use_soft_retrain == 1:
+    if args.method in ('sw_taylor', 'sw_autobot') and args.use_soft_retrain == -1 and args.use_weights_retrain == -1:
         train_loader = lambda: torch.utils.data.DataLoader(pruner.soft_train_data,
             batch_size=batch_size, shuffle=True, num_workers=num_workers)
+    elif use_soft_retrain or use_weights_retrain:
+        soft_train_data = SoftDataset(train_data, model,
+                                      weights=sw_weights(args.sw_min_weight, args.sw_gamma) if use_weights_retrain else None,
+                                      apply_fix_labels=use_soft_retrain,
+                                      data_is_deterministic=False)
+        train_loader = torch.utils.data.DataLoader(soft_train_data, batch_size=batch_size,
+                                                   shuffle=True, num_workers=num_workers)
     else:
         train_loader = torch.utils.data.DataLoader(train_data, batch_size=batch_size, shuffle=True,
             num_workers=num_workers)
+
+    #if args.method in ('sw_taylor', 'sw_autobot') and args.use_soft_retrain == 1 and args.fix_labels == 0:
+    #    def train_loader():
+    #        pruner.soft_train_data.labels = None
+    #        return torch.utils.data.DataLoader(pruner.soft_train_data, batch_size=batch_size,
+    #                                           shuffle=True, num_workers=num_workers)
+    #elif args.method in ('sw_taylor', 'sw_autobot') and args.use_soft_retrain != 0:
+    #    train_loader = lambda: torch.utils.data.DataLoader(pruner.soft_train_data,
+    #        batch_size=batch_size, shuffle=True, num_workers=num_workers)
+    #else:
+    #    train_loader = torch.utils.data.DataLoader(train_data, batch_size=batch_size, shuffle=True,
+    #        num_workers=num_workers)
 
     # Get retrainer
     retrainer = GenericRetrainer(lr, num_epochs)

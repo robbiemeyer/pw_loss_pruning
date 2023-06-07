@@ -8,7 +8,7 @@ import torch.nn.functional as F
 from torch.nn.utils.prune import ln_structured, custom_from_mask
 
 from prune.utils import Conv2dBN, SoftDataset, replace_conv2_layers, revert_conv2_layers, \
-    PrunableConv2d, Conv2dBN, argsort_convs_by_scores, fix_labels, get_all_predictions
+    PrunableConv2d, Conv2dBN, argsort_convs_by_scores, fix_labels, get_all_predictions, sw_weights
 
 from torch.utils.tensorboard import SummaryWriter
 
@@ -252,6 +252,8 @@ class ScoreWeightedAutoBot(AutoBot):
         if num_iters is None:
             num_iters = len(train_data) // batch_size
 
+        self.get_sample_weights = sw_weights(min_weight, sw_gamma)
+
         super().__init__(train_data, beta, gamma, epsilon, fix_labels, lr, num_iters, batch_size,
             num_workers, data_is_deterministic, log_dir)
 
@@ -263,16 +265,6 @@ class ScoreWeightedAutoBot(AutoBot):
         labels, predictions = get_all_predictions(self.train_data, model)
 
         return self.get_sample_weights(labels, predictions)
-
-    @torch.no_grad()
-    def get_sample_weights(self, labels, predictions):
-        if predictions.shape[1] == 1:
-            predictions, labels = predictions.view(-1), labels.view(-1)
-            scores = predictions * labels + (1 - predictions) * (1 - labels)
-        else:
-            scores = torch.gather(predictions, 1, labels.view(-1, 1)).view(-1)
-
-        return self.min_weight + (1-self.min_weight) * (1-scores)**self.sw_gamma
 
 class TaylorPrune:
     data_is_deterministic = False
@@ -486,6 +478,8 @@ class ScoreWeightedTaylorPrune(TaylorPrune):
         if log_dir is not None:
             self.data_is_deterministic = False
 
+        self.get_sample_weights = sw_weights(min_weight, gamma)
+
         super().__init__(train_data, batches_bw_prunes, prunes_per_iter, lr, batch_size,
                 num_workers, label_style, save_checkpoint, load_checkpoint, log_dir)
 
@@ -497,13 +491,3 @@ class ScoreWeightedTaylorPrune(TaylorPrune):
         labels, predictions = get_all_predictions(self.train_data, model)
 
         return self.get_sample_weights(labels, predictions)
-
-    @torch.no_grad()
-    def get_sample_weights(self, labels, predictions):
-        if predictions.shape[1] == 1:
-            predictions, labels = predictions.view(-1), labels.view(-1)
-            scores = predictions * labels + (1 - predictions) * (1 - labels)
-        else:
-            scores = torch.gather(predictions, 1, labels.view(-1, 1)).view(-1)
-
-        return self.min_weight + (1-self.min_weight) * (1-scores)**self.gamma
