@@ -90,22 +90,6 @@ class PaddingLayerPruner(tp.pruner.BasePruningFunc):
     def get_in_channels(cls, layer):
         return layer.in_planes
 
-# class PaddingLayerInPruningFn(tp.prune.structured.BasePruner):
-#     def prune(self, layer, idxs):
-#         layer.in_planes -= len(idxs)
-#         layer.calculate_padding()
-#         return layer
-#     
-#     @staticmethod
-#     def calc_nparams_to_prune(layer, idxs):
-#         return 0
-# 
-# class PaddingLayerOutPruningFn(tp.prune.structured.BasePruner):
-#     def prune(self, layer, idxs):
-#     
-#     @staticmethod
-#     def calc_nparams_to_prune(layer, idxs):
-#         return 0
 
 class BasicBlock(nn.Module):
     expansion = 1
@@ -124,7 +108,6 @@ class BasicBlock(nn.Module):
                 """
                 For CIFAR10 ResNet paper uses option A.
                 """
-                #self.shortcut = LambdaLayer(lambda x: F.pad(x[:, :, ::2, ::2], (0, 0, 0, 0, planes//4, planes//4), "constant", 0))
                 self.shortcut = PaddingLayer(in_planes, planes, stride)
             elif option == 'B':
                 self.shortcut = nn.Sequential(

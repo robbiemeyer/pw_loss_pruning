@@ -18,11 +18,6 @@ def evaluate(outputs, labels, model):
         for i, v in enumerate(classwise_auroc):
             metrics['{}_auroc'.format(i)] = v
 
-    #for target in labels.unique():
-    #    included = labels == target
-    #    predicted = model.pred_fn(outputs) == target
-    #    metrics[str(target.item()) + '_error'] = \
-    #        1 - ((included & predicted).float().sum() / included.float().sum()).item()
     return metrics
 
 def evaluate_model(model, test_datas, target_reduction, input_shape, eval_on_all=False, comment='',

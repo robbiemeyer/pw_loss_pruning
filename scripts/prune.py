@@ -218,18 +218,6 @@ if __name__ == "__main__" :
         train_loader = torch.utils.data.DataLoader(train_data, batch_size=batch_size, shuffle=True,
             num_workers=num_workers)
 
-    #if args.method in ('sw_taylor', 'sw_autobot') and args.use_soft_retrain == 1 and args.fix_labels == 0:
-    #    def train_loader():
-    #        pruner.soft_train_data.labels = None
-    #        return torch.utils.data.DataLoader(pruner.soft_train_data, batch_size=batch_size,
-    #                                           shuffle=True, num_workers=num_workers)
-    #elif args.method in ('sw_taylor', 'sw_autobot') and args.use_soft_retrain != 0:
-    #    train_loader = lambda: torch.utils.data.DataLoader(pruner.soft_train_data,
-    #        batch_size=batch_size, shuffle=True, num_workers=num_workers)
-    #else:
-    #    train_loader = torch.utils.data.DataLoader(train_data, batch_size=batch_size, shuffle=True,
-    #        num_workers=num_workers)
-
     # Get retrainer
     retrainer = GenericRetrainer(lr, num_epochs)
 

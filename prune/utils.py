@@ -182,7 +182,6 @@ class PrunableConv2d(torch.nn.Module):
                 value = getattr(modules[i-1], param) if i > 0 else None
                 setattr(modules[i], param_dest, value)
 
-        # TODO: Clean up (Do this in a better way)
         for module in model.modules():
             if isinstance(module, (BasicBlock, MBConv)):
                 for param, param_dest in cls.LAST_PARAMS:
